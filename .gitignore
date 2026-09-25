@@ -1,0 +1,30 @@
+# Payloads and Large Air-Gap Artifacts
+payloads/bin/*
+!payloads/bin/.gitkeep
+payloads/packages/*
+!payloads/packages/.gitkeep
+*.tar
+*.tar.gz
+*.tar.zst
+*.iso
+*.qcow2
+
+# Target Configs and Secrets
+*.env
+!versions.env
+!target.env.example
+*.pem
+*.key
+id_rsa*
+id_*
+known_hosts
+kubeconfig
+*.kubeconfig
+
+# Terraform / OpenTofu
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+.terraform.lock.hcl
