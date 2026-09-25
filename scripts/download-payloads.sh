@@ -29,7 +29,7 @@ download_or_copy() {
   local url="$2"
   local local_fallback="${3:-}"
 
-  if [[ -f "${target_file}" ]]; then
+  if [[ -f "${target_file}" && -s "${target_file}" ]]; then
     echo "  -> [EXISTS] $(basename "${target_file}")"
     return 0
   fi
@@ -41,44 +41,45 @@ download_or_copy() {
   fi
 
   echo "  -> [DOWNLOADING] $(basename "${target_file}") from ${url}..."
-  curl -fsSL --progress-bar -o "${target_file}" "${url}"
+  if ! curl -fsSL --progress-bar -o "${target_file}" "${url}"; then
+    echo "  ⚠️  Warning: Failed to download ${url}"
+    rm -f "${target_file}"
+    return 1
+  fi
 }
 
 # 1. Download CLI Binaries
-echo "=== [1/3] CLI Toolchains (UDS, Zarf, Kubectl, Lula) ==="
+echo "=== [1/3] CLI Toolchains (UDS, Zarf, Kubectl) ==="
 
 # UDS CLI
 download_or_copy "${BIN_DIR}/uds" \
   "https://github.com/defenseunicorns/uds-cli/releases/download/${UDS_VERSION}/uds-cli_${UDS_VERSION}_Linux_${ARCH}" \
-  "$(command -v uds || echo "/usr/local/bin/uds")"
-chmod +x "${BIN_DIR}/uds"
+  "$(command -v uds || echo "/usr/local/bin/uds")" || true
+chmod +x "${BIN_DIR}/uds" 2>/dev/null || true
 
 # Zarf CLI
 download_or_copy "${BIN_DIR}/zarf" \
   "https://github.com/zarf-dev/zarf/releases/download/${ZARF_VERSION}/zarf_${ZARF_VERSION}_Linux_${ARCH}" \
-  "$(command -v zarf || echo "${HOME}/.local/bin/zarf")"
-chmod +x "${BIN_DIR}/zarf"
+  "$(command -v zarf || echo "${HOME}/.local/bin/zarf")" || true
+chmod +x "${BIN_DIR}/zarf" 2>/dev/null || true
 
 # Kubectl
 download_or_copy "${BIN_DIR}/kubectl" \
   "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" \
-  "$(command -v kubectl || echo "${HOME}/.local/bin/kubectl")"
-chmod +x "${BIN_DIR}/kubectl"
+  "$(command -v kubectl || echo "${HOME}/.local/bin/kubectl")" || true
+chmod +x "${BIN_DIR}/kubectl" 2>/dev/null || true
 
 # Lula CLI
-LULA_RAW_VER="${LULA_VERSION#v}"
 download_or_copy "${BIN_DIR}/lula" \
-  "https://github.com/defenseunicorns/lula/releases/download/${LULA_VERSION}/lula_${LULA_RAW_VER}_linux_${ARCH}" \
-  "$(command -v lula || echo "")"
-if [[ -f "${BIN_DIR}/lula" ]]; then
-  chmod +x "${BIN_DIR}/lula"
-fi
+  "https://github.com/defenseunicorns-labs/lula1/releases/download/${LULA_VERSION}/lula_${LULA_VERSION}_Linux_${ARCH}" \
+  "$(command -v lula || echo "${HOME}/.local/bin/lula")" || true
+chmod +x "${BIN_DIR}/lula" 2>/dev/null || true
 
 # 2. Download Zarf Init Package
 echo "=== [2/3] Zarf Cluster Init Package ==="
 download_or_copy "${PKG_DIR}/zarf-init-${ARCH}-${ZARF_VERSION}.tar.zst" \
   "https://github.com/zarf-dev/zarf/releases/download/${ZARF_VERSION}/zarf-init-${ARCH}-${ZARF_VERSION}.tar.zst" \
-  "${HOME}/.zarf-cache/zarf-init-${ARCH}-${ZARF_VERSION}.tar.zst"
+  "${HOME}/.zarf-cache/zarf-init-${ARCH}-${ZARF_VERSION}.tar.zst" || true
 
 # 3. Download K3s Airgap Bundle
 echo "=== [3/3] K3s Air-Gap Runtime Package ==="
