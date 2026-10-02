@@ -36,9 +36,17 @@ deploy: ## Deploy toolchains, K8s runtime, and Zarf init to target host
 
 .PHONY: status
 status: ## Check remote cluster nodes, pods, and Zarf status
-	@source target.env 2>/dev/null || source target.env.example; \
-	ssh -o StrictHostKeyChecking=no -J $${JUMP_HOST} -i $${SSH_KEY} $${TARGET_USER}@$${TARGET_HOST} \
-		"sudo kubectl get nodes -o wide; echo ''; sudo kubectl get pods -A"
+	@if [ -f kubeconfig ]; then \
+		kubectl --kubeconfig=kubeconfig get nodes -o wide; \
+		echo ""; \
+		kubectl --kubeconfig=kubeconfig get pods -A -o wide; \
+	else \
+		source target.env 2>/dev/null || source target.env.example; \
+		SSH_CMD="ssh -o StrictHostKeyChecking=no"; \
+		[ -n "$${JUMP_HOST}" ] && SSH_CMD="$${SSH_CMD} -J $${JUMP_HOST}"; \
+		[ -n "$${SSH_KEY}" ] && SSH_CMD="$${SSH_CMD} -i $${SSH_KEY}"; \
+		$${SSH_CMD} $${TARGET_USER}@$${TARGET_HOST} "sudo kubectl get nodes -o wide; echo ''; sudo kubectl get pods -A"; \
+	fi
 
 .PHONY: clean
 clean: ## Remove downloaded payloads and local kubeconfig

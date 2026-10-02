@@ -12,13 +12,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Source configurations
+source "${REPO_ROOT}/versions.env"
+
 if [[ -f "${REPO_ROOT}/target.env" ]]; then
   source "${REPO_ROOT}/target.env"
 else
   source "${REPO_ROOT}/target.env.example"
 fi
-
-source "${REPO_ROOT}/versions.env"
 
 echo "=============================================================================="
 echo "          DEPLOYING PLATFORM RUNTIME TO AIR-GAPPED TARGET                     "

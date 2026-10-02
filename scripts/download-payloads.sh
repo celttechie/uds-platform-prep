@@ -14,6 +14,10 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # Source version config
 source "${REPO_ROOT}/versions.env"
 
+if [[ -f "${REPO_ROOT}/target.env" ]]; then
+  source "${REPO_ROOT}/target.env"
+fi
+
 BIN_DIR="${REPO_ROOT}/payloads/bin"
 PKG_DIR="${REPO_ROOT}/payloads/packages"
 
